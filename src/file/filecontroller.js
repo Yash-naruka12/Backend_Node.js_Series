@@ -1,5 +1,6 @@
 const randomString = require("randomstring");
 const File = require("./filemodel");
+const fs = require("fs");
 
 function fileUpload(fileUploaded) {
   let name = randomString.generate({
@@ -45,4 +46,27 @@ const fileController = async (req, res) => {
   }
 };
 
-module.exports = { fileController };
+const deleteFile = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const fileData = await File.findById(id);
+
+    const filePath = "./src" + fileData.path;
+
+    fs.unlink(filePath, (err) => {
+      if (err) {
+        console.log("Error while deleting file");
+      }
+      console.log("File delete successfully");
+    });
+    await File.deleteOne(fileData);
+
+    return res.status(200).send({ message: "File deleted successfully." });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({ message: "Internal server error" });
+  }
+};
+
+module.exports = { fileController, deleteFile };
